@@ -1,4 +1,3 @@
-```markdown
 # ESXi and vCenter PowerShell Scripts
 
 A collection of PowerShell scripts designed for managing, monitoring, and automating tasks in VMware ESXi and vCenter Server environments.
@@ -46,25 +45,3 @@ Before using the scripts, ensure you meet the following requirements:
    ```powershell
    .\GatherIOPS.ps1
    ```
-
-## Contributing
-
-Contributions are welcome! To contribute:
-
-1. Fork this repository.
-2. Create a feature branch:
-   ```sh
-   git checkout -b feature-branch-name
-   ```
-3. Commit your changes and push them:
-   ```sh
-   git add .
-   git commit -m "Description of your changes"
-   git push origin feature-branch-name
-   ```
-4. Open a pull request.
-
-## License
-
-This repository is licensed under the [MIT License](LICENSE). Feel free to use, modify, and distribute the scripts as needed.
-```
