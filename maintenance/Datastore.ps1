@@ -1,13 +1,44 @@
-﻿Param (
+﻿<#
+.SYNOPSIS
+    Generates a datastore usage report for a vCenter Server and sends it via email.
+
+.DESCRIPTION
+    This script connects to a vCenter Server, retrieves datastore details, calculates
+    usage metrics, formats the data into an HTML report, and sends it via email.
+
+.PARAMETER VIServer
+    The vCenter Server address.
+
+.PARAMETER PathToReport
+    The local path where the HTML report will be saved.
+
+.PARAMETER To
+    The email address to send the report to.
+
+.PARAMETER From
+    The sender email address.
+
+.PARAMETER SMTPServer
+    The SMTP server used to send the email.
+
+.EXAMPLE
+    .\Datastore.ps1 -VIServer "my-vcenter" -PathToReport "C:\Reports" -To "admin@example.com" -From "no-reply@example.com" -SMTPServer "smtp.example.com"
+
+.NOTES
+    Ensure VMware PowerCLI is installed and properly configured.
+#>
+
+Param (
     [Alias("Host")]
-    [string]$VIServer = "sldc-vc.sl",
-    [string]$PathToReport = "C:\Users\Anup.SL\Desktop\Report",
+    [string]$VIServer = "vCenter Server",
+    [string]$PathToReport = "Path TO REPORT",
    
-    [string]$To = "tech-admin@silverlining.com.np",
-    [string]$From = "'SL-DC Synergy Storage' <datastore@silverlining.com.np>",
-    [string]$SMTPServer = "mail.silverlining.com.np"
+    [string]$To = "admin@example.com",
+    [string]$From = "'Storage' <datastore@example.com>",
+    [string]$SMTPServer = "smtp.example.com"
 )
 
+# Function to apply alternating CSS classes to HTML table rows
 Function Set-AlternatingRows {
     [CmdletBinding()]
          Param(
@@ -37,6 +68,7 @@ Function Set-AlternatingRows {
      }
 }
 
+# Function to calculate percentages
 Function Percentcal {
     param(
     [parameter(Mandatory = $true)]
@@ -50,17 +82,21 @@ Function Percentcal {
 
 $date = get-date -uformat "%d-%m-%Y"
 
+# Check and import PowerCLI module
 If (-not (Get-Module –ListAvailable VM* | Import-Module -ErrorAction SilentlyContinue))
 {   Try { Get-Module –ListAvailable VM* | Import-Module -ErrorAction Stop }
     Catch { Throw "Problem loading VMware.VimAutomation.Core snapin because ""$($Error[1])""" }
 }
 
+# Connect to vCenter Server
 Try {
     $Conn = Connect-VIServer $VIServer -user noc -Password 1SLktm@noc3
 }
 Catch {
     Throw "Error connecting to $VIServer because ""$($Error[1])"""
 }
+
+# HTML Header for the report
 $Header = @"
 <style>
 BODY{font-family: Arial; font-size: 10pt;}
@@ -75,7 +111,11 @@ TD {border-width: 1px;padding: 4px;border-style: solid;border-color: black;}
 Datastore Report - $VIServer
 </title>
 "@
+
+# Fetch datastores excluding certain patterns
 $datastores = Get-Datastore | sort name | Where-Object {$_.Name -notlike "Synergy-ENC*"} | Where-Object {$_.Name -notlike "SynergyPalo*"} | Where-Object {$_.Name -notlike "DR-ESXI*"} | Where-Object {$_.Name -notlike "appesxi*"}
+
+# Process each datastore and calculate metrics
 ForEach ($ds in $datastores) {
     $PercentFree = Percentcal $ds.FreeSpaceMB $ds.CapacityMB
        
@@ -102,6 +142,7 @@ ForEach ($ds in $datastores) {
     $ds | Add-Member -type NoteProperty -name PercentFree -value $PercentFree
 }
 
+# Generate report and format HTML
 $Report = @($datastores | Select DataStoreName, TotalSpaceGB, ProvisionedGB, OverProvisionedGB, OverProvisioned, ActualUsedSpaceGB, FreeSpace, PercentFree)  | sort OverProvisioned -Descending:$true
 #################################################################################
 ######################### HTML Body #############################################
@@ -126,12 +167,15 @@ $strRowStyleHTML10 = if ($dStore.PercentFree -lt 15 -And $dStore.OverProvisioned
 
 } ## end foreach
 $html5 = "</TABLE>"
+
 #################################################################################
 
 $Report = ConvertTo-Html -Body $Header$html1$html2$html3$html4$html5 | Set-AlternatingRows -CSSEvenClass even -CSSOddClass odd
 
+# Save the report to file
 $Report | Out-File $PathToReport\Datastore_Report_Vcenter.html
 
+# Email the report
 $MailSplat = @{
     To         = $To
     From       = $From

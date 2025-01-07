@@ -24,5 +24,6 @@ $finalout = ConvertTo-HTML -head $head -PostContent $body,$body1 | Out-String
  
 #Send email to Admins
 Send-MailMessage -From 'vcenter-alert@silverlining.com.np' -To 'anup.khanal@silverlining.com.np' -Subject 'Host Health Check' -body "$finalout" -BodyAsHtml -SmtpServer 'mail.silverlining.com.np'
+
 #DisConnect from our vCenter Server
 disconnect-viserver -confirm:$false

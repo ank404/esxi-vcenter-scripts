@@ -1,11 +1,16 @@
-﻿Param (
+﻿# Description: This script generates a storage report for a specific VM and sends it to the specified email address.
+
+# Import the required modules
+Param (
     [Alias("Host")]
-    [string]$PathToReport = "C:\Users\Anup.SL\Desktop\Report",
-    [string]$To = "anup.khanal@silverlining.com.np",
-    [string]$From = "'ACE Travels Storage Report' <report@silverlining.com.np>",
-    [string]$SMTPServer = "mail.silverlining.com.np"
+    [string]$PathToReport = "PATH_TO_REPORT\Report",
+    [string]$To = "admin@example.com",
+    [string]$From = "'Client Storage Report' <report@example.com>",
+    [string]$SMTPServer = "smtp.example.com"
 )
 
+#region Functions
+# Function to set alternating rows in the HTML table
 Function Set-AlternatingRows {
     [CmdletBinding()]
          Param(
@@ -35,6 +40,8 @@ Function Set-AlternatingRows {
      }
 }
 
+
+# Function to calculate the percentage
 Function Percentcal {
     param(
     [parameter(Mandatory = $true)]
@@ -46,9 +53,10 @@ Function Percentcal {
 
 #endregion
 
+# HTML Header
 $Header = @"
 <head>
-<title>Monthly Report For ACE Travels</title>
+<title>Monthly Report For VMs</title>
 <style>
 body { font-family: "Trebuchet MS", Arial, Helvetica, sans-serif; font-size: 14px;}
 table { font-family: "Trebuchet MS", Arial, Helvetica, sans-serif; border-collapse: collapse; width: 100%;}
@@ -59,12 +67,18 @@ TR:Hover TD {Background-Color: #9bfd9c;}
 </style></body></head>
 "@
 
+# Input box to get the VM name
+# Use * as VM Name to get the report of all VMs. e.g. client1* will give you the report of all VMs starting with client1
 [void][Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic')
 $title = "VM Report"
 $msg   = "Enter VM Name you would like to get Report of:"
 $VM = [Microsoft.VisualBasic.Interaction]::InputBox($msg,$title )
 
-    $vcinfo = Import-Csv C:\Users\Anup.SL\Desktop\vcenter.csv
+    # CSV File should be in below Format
+    # viserver,username,password
+    # vcenter1,admin,password
+    # vcenter2,admin,password
+    $vcinfo = Import-Csv PATH_TO_Vcenter_Details\vcenter.csv
     foreach ($vi in $vcinfo)
      {
         $convi = Connect-VIServer -server $vi.viserver -username $vi.username -password $vi.password
@@ -83,11 +97,12 @@ $VM = [Microsoft.VisualBasic.Interaction]::InputBox($msg,$title )
         }
       }
 
+# Sort the report based on the VM name
 $Report = @($vms | Select VM, Path, CapacityGB, FreeSpaceGB, Percent)  | sort VM -Descending:$true
 #################################################################################
 ######################### HTML Body #############################################
 #################################################################################
-$html1 = "<body><h2 style = text-align:center>ACE Travels Monthly OS Storage Report</h2>
+$html1 = "<body><h2 style = text-align:center>Client 1 Monthly OS Storage Report</h2>
     <p><b>Legend</b><br/>
     <b><font color=#ffff24>Yellow</font></b> = Used percentage between 75% and 85%<br/>
     <b><font color=red>Red</font></b> = Used percentage between 85% and 100%
@@ -97,25 +112,30 @@ $html3 = "<TABLE>`n<TR><TH>VM Name</TH><TH>Path</TH><TH>Capacity (GB)</TH><TH>Fr
 $html4 = foreach ($dStore in $Report) {
 
 ## create the row STYLE HTML based on this datastore's PercentFree value 
+## if the PercentFree is less than 15% then the row will be red
+## if the PercentFree is less than 25% then the row will be yellow
 $strRowStyleHTML10 = if ($dStore.Percent -lt 15){" STYLE='background-color: #ff2424'"}
                      elseif ($dStore.Percent -lt 25) {" STYLE='background-color: #ffff24'"}
                      else {" STYLE='background-color: #cfe9f8'"}
 
-## return the HTML for the row for this datastore 
+## create the row HTML
 "<TR$strRowStyleHTML10><TD>$($dStore.VM)</TD><TD>$($dStore.Path)</TD><TD>$($dStore.CapacityGB)</TD><TD>$($dStore.FreeSpaceGB)</TD><TD>$($dStore.Percent)</TD></TR>`n"
 
 } ## end foreach
 $html5 = "</TABLE>"
 #################################################################################
 
+# Convert the report to HTML and save it to a file
 $Report = ConvertTo-Html -Body $Header$html1$html2$html3$html4$html5 | Set-AlternatingRows -CSSEvenClass even -CSSOddClass odd
 
+# Save the report to a file
 $Report | Out-File $PathToReport\storage.html
 
+# Send the report via email
 $MailSplat = @{
     To         = $To
     From       = $From
-    Subject    = "ACE Travels Monthly Report"
+    Subject    = "Client 1 Monthly Report"
     Body       = ($Report | Out-String)
     BodyAsHTML = $true
     SMTPServer  = $SMTPServer

@@ -1,9 +1,8 @@
 param($datastores, $numsamples)
 
-$server = "synergy.sl"
+$server = "vCenter Server IP/Domain"
 # connect vCenter server session
-Connect-VIServer $server -username noc -password 1SLktm@noc3 | Out-Null
-
+Connect-VIServer $server -username 'username' -password 'Enter Password Here' | Out-Null
 
 # function to get iops for a vm on a particular host
 function GetAvgStat($vmhost,$vm,$ds,$samples,$stat){
@@ -50,7 +49,7 @@ foreach ($datastore in $datastores) {
   # Gather current IO snapshot for each VM
   $dataArray = @()
   foreach ($vm in $myVMs) {
-  	$data = “” | Select "VM", "Interval (minutes)", "Avg Write IOPS", "Avg Read IOPS"
+  	$data = ï¿½ï¿½ | Select "VM", "Interval (minutes)", "Avg Write IOPS", "Avg Read IOPS"
   	$data."VM" = $vm.name
   	$data."Interval (minutes)" = ($numsamples*20)/60
   	$data."Avg Write IOPS" = GetAvgStat -vmhost $vm.host.name -vm $vm.name -ds $datastore -samples $numsamples -stat disk.numberWrite.summation
@@ -64,4 +63,4 @@ foreach ($datastore in $datastores) {
 }
 
 $IOPSReport
-$IOPSReport | Export-CSV C:\Users\Anup.SL\Desktop\IOPSReport.csv -NoType
+$IOPSReport | Export-CSV Path_to_CSV_File -NoType

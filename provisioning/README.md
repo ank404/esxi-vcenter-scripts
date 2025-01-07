@@ -1,19 +1,40 @@
+
 # Provisioning Scripts
 
-This folder contains scripts for automating the provisioning of virtual machines and VLANs in VMware environments.
+This folder contains PowerCLI scripts designed to automate the provisioning of virtual machines and VLANs in VMware environments. These scripts streamline tasks that are repetitive or require consistent accuracy.
 
-## Scripts
+## Scripts Overview
 
-- **Add-VLAN_From_CSV.ps1**: Adds VLANs to a host using details from a CSV file.
-- **Add-VLAN_Single_Host.ps1**: Adds a single VLAN to a specified host.
-- **VMCreationDate.ps1**: Retrieves the creation date of virtual machines.
+1. **Add-VLAN_From_CSV.ps1**
+   - **Purpose**: Automates the addition of VLANs to ESXi hosts using details provided in a CSV file.
+   - **Usage**: Use this script to provision multiple VLANs efficiently across hosts.
+   - **Input**: A CSV file containing VLAN IDs, names, and host details.
+   - **Example**:
+     ```powershell
+     .\Add-VLAN_From_CSV.ps1 -CSVPath "C:\VLANs.csv"
+     ```
+   - **CSV Format**:
+     ```
+     HostName,VLANID,VLANName
+     host01.local,100,Management
+     host02.local,200,Production
+     ```
 
-## Usage
+2. **VMCreationDate.ps1**
+   - **Purpose**: Retrieves the creation dates of virtual machines in the vCenter inventory.
+   - **Usage**: Useful for auditing and tracking purposes.
+   - **Example**:
+     ```powershell
+     .\VMCreationDate.ps1 -VMName "TestVM01"
+     ```
 
-Run the scripts in PowerShell. Ensure that VMware PowerCLI is installed and connected to your vCenter Server.
+## How to Run
 
-### Examples:
-- To add VLANs from a CSV file:
-  ```powershell
-  .\Add-VLAN_From_CSV.ps1 -CSVPath "path-to-your-csv-file.csv"
+- Install and configure VMware PowerCLI.
+- Connect to your vCenter Server using `Connect-VIServer`.
+- Prepare any required input files, such as CSVs, before running the scripts.
 
+## Notes
+
+- Always validate your CSV file format and data before running scripts to avoid errors.
+- These scripts are designed to save time and reduce human errors in provisioning tasks.

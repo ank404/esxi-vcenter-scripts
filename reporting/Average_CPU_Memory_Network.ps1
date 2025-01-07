@@ -1,11 +1,21 @@
-﻿[void][Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic')
+﻿# Description: This script is used to generate a monthly report of VMs in Average CPU, Memory, Network, and Disk Utilization.
+
+[void][Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic')
 $title = "VM Report"
 $msg   = "Enter VM Name you would like to get Report of:"
 $VM = [Microsoft.VisualBasic.Interaction]::InputBox($msg,$title )
 
+# When asked to get Report you should use * as VM Name. e.g. client1* will give you report of all VMs starting with client1
+
+# Connect to the vCenter
+# CSV File should be in below Format
+        # viserver,username,password
+        # vcenter1,admin,password
+        # vcenter2,admin,password
 function get-report 
 {
-    $vcinfo = Import-Csv C:\Users\Anup.SL\Desktop\vcenter.csv
+    $vcinfo = Import-Csv PATH_TO_CSV_FILE\vcenter.csv
+    # Loop through the vCenter information and get the report
     foreach ($vi in $vcinfo)
      {
         $convi = Connect-VIServer -server $vi.viserver -username $vi.username -password $vi.password   
@@ -18,6 +28,7 @@ function get-report
      }
 }
 
+# Generate the report and save it to an HTML file
 $Header = @"
 <!DOCTYPE html>
 <head>
@@ -30,4 +41,6 @@ th { padding-top: 12px; padding-bottom: 12px; text-align: left; background-color
 .even { background-color:#dddddd; }
 </style></body></head>
 "@
-get-report | ConvertTo-Html -Property Name, NumCpu, MemoryGB, CPUUsageAverageMhz, MemoryUsageAverage%, NetworkUsageAverageKBps, DiskUsageAverageKBps -Head $Header | Out-File "C:\Users\Anup.SL\Desktop\Report\GIBL-Monthly-Report.html" 
+
+# Get the report and convert it to HTML
+get-report | ConvertTo-Html -Property Name, NumCpu, MemoryGB, CPUUsageAverageMhz, MemoryUsageAverage%, NetworkUsageAverageKBps, DiskUsageAverageKBps -Head $Header | Out-File "PATH_TO_HTML_FILE\Monthly-Report.html"

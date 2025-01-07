@@ -1,7 +1,31 @@
-﻿
-# Connect to vCenter using passthrough credentials
-connect-viserver -server sldc-vc.sl -username noc -password 1SLktm@noc3
+﻿<#
+.SYNOPSIS
+    A script to connect to vCenter Server and perform compute-related tasks.
 
+.DESCRIPTION
+    This script connects to a vCenter Server using credentials and performs operations
+    such as generating and styling HTML content related to compute resources.
+
+.PARAMETER vCenterServer
+    The name or IP address of the vCenter Server.
+
+.PARAMETER Username
+    The username for vCenter Server authentication.
+
+.PARAMETER Password
+    The password for vCenter Server authentication.
+
+.NOTES
+    Ensure VMware PowerCLI is installed before running the script.
+
+#>
+# Connect to vCenter using passthrough credentials
+# SECURITY WARNING: Using hardcoded credentials is not recommended. Replace this with secure handling, such as prompting for credentials or using a credential store.
+
+# Connect to vCenter using passthrough credentials
+connect-viserver -server 'vCenter Server' -username 'username' -password 'Enter password here'
+
+# Function to apply alternating CSS classes to HTML table rows
 Function Set-AlternatingRows {
     [CmdletBinding()]
          Param(
@@ -15,9 +39,11 @@ Function Set-AlternatingRows {
              [string]$CSSOddClass
          )
      Begin {
+        # Initialize the class to be applied for even rows
          $ClassName = $CSSEvenClass
      }
      Process {
+        # Replace table row tags with appropriate class attributes
          [string]$Line = $HTMLDocument
          $Line = $Line.Replace("<tr>","<tr class=""$ClassName"">")
          If ($ClassName -eq $CSSEvenClass)
@@ -26,27 +52,29 @@ Function Set-AlternatingRows {
          Else
          {    $ClassName = $CSSEvenClass
          }
+         # Adjust the table width for better readability
          $Line = $Line.Replace("<table>","<table width=""90%"">")
          Return $Line
      }
 }
 
-
+# Get the current date in the format dd-mm-yyyy
 $date = get-date -uformat "%d-%m-%Y"
 
-# Get a list of hosts in a specific cluster (omit the get-cluster to get all hosts, and just use get-vmhost)
+# Retrieve a list of all hosts in a specific cluster
+# Note: To retrieve all hosts across clusters, omit the `get-cluster` command and use `get-vmhost` directly.
 $hosts = get-vmhost; 
 
-# Define an empty table
+# Define an empty table to store host details
 $table = @() 
 
-# Loop through each host found
+# Loop through each host and calculate CPU usage statistics
 foreach ($vmhost in $hosts) {
 
-    # Create an empty row
+    # Create an empty row for host statistics
     $row = "" | select Hostname, pCPUsAvailable, CPUsAssigned, Ratio, Overcommited;
 
-    # Get the number of vCPUs assigned
+    # Get the number of vCPUs assigned to this host
     $cpumeasure = $vmhost | get-vm | where {$_.powerstate -eq "poweredon"} | measure-object numcpu -sum;
 
     # Add the hostname to the row
@@ -78,6 +106,7 @@ foreach ($vmhost in $hosts) {
 $table = $table + $row 
 }
 
+# Apply alternating row styles to the HTML table
 $Header = @"
 <style>
 BODY{background-color:white;}
@@ -160,13 +189,14 @@ $table += @"
 </html>
 "@
 
+# Send the report via email (optional - configure SMTP settings before using)
 $MailSplat = @{
-    To         = "tech-admin@silverlining.com.np"
-    From       = "'SLDC Synergy Compute' compute@silverlining.com.np"
-    Subject    = "SLDC Synergy Compute Report"
+    To         = "admin@example.com"
+    From       = "'Compute Report' reports@example.com"
+    Subject    = "Compute Report"
     Body       = ($table | Out-String)
     BodyAsHTML = $true
-   SMTPServer = "mail.silverlining.com.np"
+   SMTPServer = "smtp.example.com"
 }
 
 Send-MailMessage @MailSplat

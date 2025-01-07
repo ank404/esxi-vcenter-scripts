@@ -1,4 +1,4 @@
-﻿connect-viserver -server sldc-vc.sl -username noc -password 1SLktm@noc3
+﻿connect-viserver -server vCenter_Server -username 'Username' -password 'Enter Password Here'
 
 $metrics = "disk.numberwrite.summation","disk.numberread.summation"
 $start = (Get-Date).AddMinutes(-5)
@@ -31,6 +31,6 @@ $report = $stats | Group-Object -Property {$_.Entity.Name},Instance | %{
   }
 }
 
-Send-MailMessage -Subject "IOPS Report" -From iops@silverlining.com.np `
-  -To anup.khanal@silverlining.com.np -SmtpServer mail.silverlining.com.np `
-  -BodyAsHtml -Body ($report | Select VM,Datastore,IOPSWriteAvg,IOPSWriteMax,IOPSReadAvg,IOPSReadMax | Sort-Object -Property IOPSWriteAvg -Descending | Export-Csv c:\Users\Anup.SL\Desktop\Report\IOPS.csv -NoTypeInformation | ConvertTo-Html | Out-String)
+Send-MailMessage -Subject "IOPS Report" -From iops@example.com `
+  -To admin@example.com -SmtpServer smtp.example.com `
+  -BodyAsHtml -Body ($report | Select VM,Datastore,IOPSWriteAvg,IOPSWriteMax,IOPSReadAvg,IOPSReadMax | Sort-Object -Property IOPSWriteAvg -Descending | Export-Csv Path_to_CSV_File\IOPS.csv -NoTypeInformation | ConvertTo-Html | Out-String)

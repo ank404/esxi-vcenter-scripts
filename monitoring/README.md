@@ -1,24 +1,40 @@
 
-#### **Folder: `monitoring`**
-Here’s the content for `monitoring/README.md`:
-
-```markdown
 # Monitoring Scripts
 
-This folder contains scripts for monitoring and gathering data from VMware environments.
+This folder contains PowerCLI scripts designed for monitoring VMware environments. These scripts help administrators collect performance metrics and identify potential issues through alerts and trends.
 
-## Scripts
+## Scripts Overview
 
-- **GatherIOPS.ps1**: Collects Input/Output Operations Per Second (IOPS) data for virtual machines.
-- **IOPS-Script.ps1**: Analyzes IOPS trends over time.
-- **Vcenter-Alert-Script.ps1**: Fetches and displays alerts from vCenter Server.
+1. **GatherIOPS.ps1**
+   - **Purpose**: Collects IOPS (Input/Output Operations Per Second) data for virtual machines across your vSphere environment.
+   - **Usage**: Use this script to monitor storage performance for troubleshooting and capacity planning.
+   - **Example**:
+     ```powershell
+     .\GatherIOPS.ps1 -VMName "WebServer01"
+     ```
 
-## Usage
+2. **IOPS-Script.ps1**
+   - **Purpose**: Analyzes IOPS data to identify trends and usage patterns over time.
+   - **Usage**: Helpful for performance tuning and predicting future storage needs.
+   - **Example**:
+     ```powershell
+     .\IOPS-Script.ps1 -TimeRange "LastWeek"
+     ```
 
-Run these scripts in PowerShell to gather detailed monitoring data and alerts.
+3. **Vcenter-Alert-Script.ps1**
+   - **Purpose**: Fetches active alerts from vCenter Server to provide insights into the health of your VMware infrastructure.
+   - **Usage**: Ideal for identifying and addressing issues proactively.
+   - **Example**:
+     ```powershell
+     .\Vcenter-Alert-Script.ps1 -Severity "Critical"
+     ```
 
-### Examples:
-- To gather IOPS data:
-  ```powershell
-  .\GatherIOPS.ps1
+## How to Run
 
+- Install and configure VMware PowerCLI.
+- Connect to your vCenter Server with `Connect-VIServer` before executing these scripts.
+- Specify required parameters based on your monitoring objectives.
+
+## Notes
+
+These scripts are intended to assist with proactive monitoring and data-driven decision-making for VMware infrastructure.
